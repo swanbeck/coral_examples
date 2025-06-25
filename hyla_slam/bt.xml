@@ -1,0 +1,72 @@
+<root main_tree_to_execute="Main" BTCPP_format="4">
+
+    <BehaviorTree ID="Main">
+        <Sequence>
+            <SubTree ID="StartSLAM"/>
+            <RetryUntilSuccessful num_attempts="-1">
+                <Fallback>
+                    <RunningIsFailure>
+                        <Sleep msec="80000"/>
+                        <!-- <WaitForRemoteTrigger process_identifier="stop_slam"/> -->
+                    </RunningIsFailure>
+                    <ForceFailure>
+                        <SubTree ID="IterateSLAM"/>
+                    </ForceFailure>
+                </Fallback>
+            </RetryUntilSuccessful>
+            <SubTree ID="EndSLAM"/>
+        </Sequence>
+    </BehaviorTree>
+
+    <BehaviorTree ID="StartSLAM">
+        <Sequence>
+            <SetLocalizationEstimate/>
+            <EnableLocalization/>
+            <RetryUntilSuccessful num_attempts="-1">
+                <Sequence>
+                    <Sleep msec="1000"/>
+                    <SubTree ID="GatherData"/>
+                </Sequence>
+            </RetryUntilSuccessful>
+        </Sequence>
+    </BehaviorTree>
+
+    <BehaviorTree ID="EndSLAM">
+        <Sequence>
+            <DisableLocalization/>
+            <UnloadData/>
+        </Sequence>
+    </BehaviorTree>
+
+    <BehaviorTree ID="IterateSLAM">
+        <Sequence>
+            <Sequence>
+                <Sleep msec="10"/>
+                <GetMappingDisplacement 
+                    linear_target="10.0" 
+                    angular_target="3.14"/>
+                <ForceSuccess>
+                    <SubTree ID="GatherData"/>
+                </ForceSuccess>
+            </Sequence>
+        </Sequence>
+    </BehaviorTree>
+
+    <BehaviorTree ID="GatherData">
+        <Sequence>
+            <GetPointCloudData
+                topic="/ouster/points"
+                cloud="{point_cloud}"
+                local_transform="{local_transform}"
+                global_transform="{global_transform}"
+            />
+            <IndexData 
+                point_cloud="{point_cloud}" 
+                local_transform="{local_transform}"
+                global_transform="{global_transform}"
+                unload_data="true"
+            />
+        </Sequence>
+    </BehaviorTree>
+
+</root>

@@ -1,0 +1,29 @@
+/**:
+  hyla_slam:
+    ros__parameters:
+      point_cloud_topic: /ouster/points
+      fixed_frame: map
+      robot_frame: os_sensor
+      localization_frame: os_sensor
+      best_effort_qos: false
+      mapping:
+        data_dir: /ws/data/
+        persist_recent_chunks: true
+        scan_memory_horizon: 5
+        dense_map_radius: 5.0
+        maintain_dense_chunks: true
+        max_points_per_dense_chunk: 300
+        save_dense_scans: true
+      localization:
+        voxel_size: 1.0
+        min_motion_th: 0.01
+        max_range: 100.0
+        min_range: 5.0
+        max_num_iterations: 500
+  watertender:
+    ros__parameters:
+      fixed_frame: map
+      robot_frame: os_sensor
+      raw_data_topics:
+        PointCloud2:
+          - /ouster/points

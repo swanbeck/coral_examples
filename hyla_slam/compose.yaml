@@ -1,0 +1,52 @@
+x-coral-config:
+  &coral-config
+  network_mode: host
+  ipc: host
+  tty: true
+  environment:
+    - ROS_DOMAIN_ID=65
+    - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+    - CYCLONEDDS_URI=/ws/cyclonedds.xml
+    - LOG_LEVEL=info
+    - PARAMS=/ws/params.yaml
+  volumes:
+    - ${CORAL_LIB}:${INTERNAL_CORAL_LIB}
+    - ./data:/ws/data
+    - ./bt.xml:/ws/bt.xml
+    - ./params.yaml:/ws/params.yaml
+    - ./cyclonedds.xml:/ws/cyclonedds.xml
+    - ./bags:/ws/bags
+
+services:
+  bag_player:
+    image: coral-bag_player:humble-amd64
+    <<: *coral-config
+    environment:
+      - ROS_DOMAIN_ID=65
+      - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+      - CYCLONEDDS_URI=/ws/cyclonedds.xml
+      - BAG_DIR=/ws/bags
+      - BAG=colosseo_test0_00
+    profiles: [drivers]
+
+  hyla_slam:
+    image: coral-hyla_slam:humble-amd64
+    <<: *coral-config
+    profiles: [skillsets]
+
+  watertender:
+    image: coral-watertender:humble-amd64
+    <<: *coral-config
+    profiles: [skillsets]
+
+  runner:
+    image: coral-dynamic_runner:humble-amd64
+    <<: *coral-config
+    environment:
+      - ROS_DOMAIN_ID=65
+      - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+      - CYCLONEDDS_URI=/ws/cyclonedds.xml
+      - LOG_LEVEL=info
+      - BT_FILE=/ws/bt.xml
+      - LOADING_LIBRARY_PATH=${INTERNAL_CORAL_LIB}
+    profiles: [executors]
