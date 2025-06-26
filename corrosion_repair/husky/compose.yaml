@@ -15,7 +15,7 @@ x-coral-config:
     - .:/ws
 
 services:
-  husky_drivers:
+  husky_driver:
     image: philbart:latest
     <<: *coral-config
     profiles: [drivers]
@@ -25,15 +25,15 @@ services:
     <<: *coral-config
     profiles: [drivers]
   
-  lidar_drivers:
-    image: coral-ouster_drivers:noetic-amd64
+  lidar_driver:
+    image: coral-ouster_driver:noetic-amd64
     <<: *coral-config
     environment:
       - SENSOR_HOSTNAME=192.168.7.120
     profiles: [drivers]
   
-  camera_drivers:
-    image: coral-realsense_drivers:humble-amd64
+  camera_driver:
+    image: coral-realsense_driver:humble-amd64
     <<: *coral-config
     volumes:
       - .:/ws

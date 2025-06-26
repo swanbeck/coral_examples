@@ -15,20 +15,20 @@ x-coral-config:
     - .:/ws
 
 services:
-  spot_drivers:
+  spot_driver:
     image: spot_ros:humble
     <<: *coral-config
     devices:
       - /dev/input/js0
     profiles: [drivers]
 
-  lidar_drivers:
-    image: coral-velodyne_drivers:humble-arm64
+  lidar_driver:
+    image: coral-velodyne_driver:humble-arm64
     <<: *coral-config
     profiles: [drivers]
 
-  camera_drivers:
-    image: coral-realsense_drivers:humble-arm64
+  camera_driver:
+    image: coral-realsense_driver:humble-arm64
     <<: *coral-config
     volumes:
       - .:/ws

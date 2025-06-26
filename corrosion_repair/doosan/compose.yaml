@@ -15,18 +15,18 @@ x-coral-config:
     - .:/ws
 
 services:
-  spot_drivers:
+  doosan_driver:
     image: doosan_deploy:latest
     <<: *coral-config
     profiles: [drivers]
 
-  lidar_drivers:
-    image: coral-ouster_drivers:humble-amd64
+  lidar_driver:
+    image: coral-ouster_driver:humble-amd64
     <<: *coral-config
     profiles: [drivers]
 
-  camera_drivers:
-    image: coral-realsense_drivers:humble-amd64
+  camera_driver:
+    image: coral-realsense_driver:humble-amd64
     <<: *coral-config
     volumes:
       - .:/ws
