@@ -1,0 +1,94 @@
+/**:
+  watertender:
+    ros__parameters:
+      fixed_frame: map
+      robot_frame: base_link
+      raw_data_topics:
+        PointCloud2:
+          - /ouster/points
+        Image:
+          - /camera/camera/color/image_raw
+        CameraInfo:
+          - /camera/camera/color/camera_info
+        DepthImage:
+          - /camera/camera/depth/image_rect_raw
+        DepthCameraInfo:
+          - /camera/camera/depth/camera_info
+
+  hyla_slam:
+    ros__parameters:
+      point_cloud_topic: /ouster/points
+      fixed_frame: map
+      robot_frame: base_link
+      localization_frame: os_lidar
+      best_effort_qos: true
+      mapping:
+        data_dir: /ws/data
+        half_side_length: 5.0
+        persist_recent_chunks: true
+        recent_scan_memory: 5
+      localization:
+        voxel_size: 0.5
+        min_motion_th: 0.01
+        max_range: 20.0
+        min_range: 1.0
+        max_num_iterations: 500
+
+  poirot:
+    ros__parameters:
+      plugin: /home/coral/poirot/poirot_plugin.py
+      service_types: 
+        - image_semantic_annotation
+      data_dir: /ws/data
+      weights_path: /home/coral/poirot/weights/47.pt
+  
+  phidias_painter:
+    ros__parameters:
+      painter:
+        extrinsic_calibration_dir: /ws/data
+
+  next_best_view_server:
+    ros__parameters:
+      base_link: base_link
+      task_frame: map
+      camera_depth_topic: /camera/camera/depth/image_rect_raw
+      camera_info_topic: /camera/camera/depth/camera_info
+      tsdf:
+        padding: 0.1
+        voxel_size: 0.05
+        fine_voxel_scale: 0.0
+        truncation_distance: 0.2
+        distance_multiplier: 1000.0
+        min_depth: 0.1
+        max_depth: 1.0
+      nbv_policy:
+        min_z_dist: 0.0
+        ray_density_downsample: 10
+
+  ouster/os_driver:
+    ros__parameters:
+      sensor_hostname: '192.168.7.128'
+      udp_dest: ''
+      mtp_dest: ''
+      mtp_main: false
+      lidar_mode: ''
+      timestamp_mode: 'TIME_FROM_ROS_TIME'
+      ptp_utc_tai_offset: -37.0
+      udp_profile_lidar: ''
+      metadata: ''
+      lidar_port: 0
+      imu_port: 0
+      sensor_frame: os_sensor
+      lidar_frame: os_lidar
+      imu_frame: os_imu
+      point_cloud_frame: os_lidar 
+      proc_mask: IMG|PCL|IMU|SCAN
+      scan_ring: 0
+      use_system_default_qos: false
+      point_type: original
+      azimuth_window_start: 0
+      azimuth_window_end: 360000
+      persist_config: false
+      attempt_reconnect: false
+      dormant_period_between_reconnects: 1.0
+      max_failed_reconnect_attempts: 2147483647

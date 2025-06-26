@@ -1,0 +1,112 @@
+<root main_tree_to_execute="Main" BTCPP_format="4">
+
+    <BehaviorTree ID="Main">
+        <Sequence>
+            <!-- wait for remote authorization from survey robot-->
+            <WaitForRemoteTrigger process_identifier="survey_finished"/>
+
+            <Sleep msec="3000"/>
+
+            <WaitForRemoteTrigger process_identifier="next"/>
+            <SubTree ID="ViewMiniMap"/>
+
+            <WaitForRemoteTrigger process_identifier="next"/>
+            <SubTree ID="ViewDetectionMap"/>
+
+            <WaitForRemoteTrigger process_identifier="next"/>
+            <SubTree ID="SpawnSpotPost"/>
+
+            <WaitForRemoteTrigger process_identifier="next"/>
+            <SubTree ID="SpawnDoosanAlley"/>
+
+            <!-- authorize remotes for repair robots -->
+            <TriggerRemote remote_hostname="spot" process_identifier="authorize_repair"/>
+            <TriggerRemote remote_hostname="doosan" process_identifier="authorize_repair"/>
+        </Sequence>
+    </BehaviorTree>
+
+    <BehaviorTree ID="SpawnDoosanAlley">
+        <Sequence>
+            <ConstructPose
+                x="19.0"
+                y="6.0"
+                z="0.0"
+                pose="{doosan_pose}"
+            />
+
+            <Repeat num_cycles="3"> 
+                <SpawnRobot
+                    robot="doosan"
+                    pose_stamped="{doosan_pose}"
+                />
+            </Repeat>
+        </Sequence>
+    </BehaviorTree>
+
+    <BehaviorTree ID="SpawnSpotPost">
+        <Sequence>
+            <ConstructPose
+                x="7.0"
+                y="13.5"
+                z="-0.25"
+                qw="0.707"
+                qz="-0.707"
+                pose="{spot_pose}"
+            />
+
+            <Repeat num_cycles="3"> 
+                <SpawnRobot
+                    robot="spot"
+                    pose_stamped="{spot_pose}"
+                />
+            </Repeat>
+        </Sequence>
+    </BehaviorTree>
+
+    <BehaviorTree ID="ViewMiniMap">
+        <Sequence>
+            <SetLocalizationEstimate/>
+
+            <GetMap map="{local_map_cloud}"/>
+
+            <VoxelizeCloud
+                cloud="{local_map_cloud}"
+                leaf_size="0.12"
+                voxelized_cloud="{local_map_cloud}"
+            />
+            
+            <Repeat num_cycles="1">
+                <PublishPointCloud
+                    topic="/blue/points"
+                    point_cloud="{local_map_cloud}"
+                />
+            </Repeat>
+
+        </Sequence>
+    </BehaviorTree>
+
+    <BehaviorTree ID="ViewDetectionMap">
+        <Sequence>
+            <SetLocalizationEstimate/>
+
+            <GetMap map="{local_map_cloud}"/>
+
+            <ExtractPoints
+                cloud="{local_map_cloud}"
+                field="semantic_label"
+                lower_bound="100.0"
+                upper_bound="255.1"
+                points="{extracted_points}"
+            />
+
+            <Repeat num_cycles="1">
+                <PublishPointCloud
+                    topic="/red/points"
+                    point_cloud="{extracted_points}"
+                />
+            </Repeat>
+
+        </Sequence>
+    </BehaviorTree>
+
+</root>

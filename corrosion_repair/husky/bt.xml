@@ -1,0 +1,174 @@
+<root main_tree_to_execute="Main" BTCPP_format="4">
+
+    <BehaviorTree ID="Main">
+        <Sequence>
+            <SubTree ID="StartSLAM"
+                camera_info="{camera_info}"
+            />
+            <RetryUntilSuccessful num_attempts="-1">
+                <Fallback>
+                    <RunningIsFailure>
+                        <WaitForRemoteTrigger process_identifier="stop_slam"/>
+                    </RunningIsFailure>
+                    <ForceFailure>
+                        <SubTree ID="IterateSLAM"
+                            camera_info="{camera_info}"
+                        />
+                    </ForceFailure>
+                </Fallback>
+            </RetryUntilSuccessful>
+            <SubTree ID="EndSLAM"/>
+
+            <SubTree ID="ShutdownSequence"/>
+            
+            <SubTree ID="PushMapData"
+                radius="-1.0"
+                sender="husky"
+                sender_address="10.10.0.3"
+                recipient="server"
+                recipient_address="10.10.10.8"
+            />
+            <TriggerRemote remote_hostname="server" process_identifier="survey_finished"/>
+        </Sequence>
+    </BehaviorTree>
+
+    <BehaviorTree ID="StartSLAM">
+        <Sequence>
+            <SetLocalizationEstimate/>
+            <EnableLocalization/>
+            <GetMap/>
+            <Sleep msec="5000"/>
+            <GetCameraInfoData
+                topic="/philbart/realsense_front/color/camera_info"
+                camera_info="{camera_info}"
+            />
+            <SubTree ID="GatherData"
+                camera_info="{camera_info}"
+            />
+            <!-- <SpawnRobotMarker
+                frame_id="base_link"
+                mesh_path="file:///home/steven/workspace/research/testing/philbart/config/husky.dae"/> -->
+        </Sequence>
+    </BehaviorTree>
+
+    <BehaviorTree ID="EndSLAM">
+        <Sequence>
+            <DisableLocalization/>
+            <UnloadData/>
+        </Sequence>
+    </BehaviorTree>
+
+    <BehaviorTree ID="GatherData">
+        <Sequence>
+            <GetImageData
+                topic="/philbart/realsense_front/color/image_raw"
+                image="{color_image}"
+                local_transform="{color_camera_local_transform}"
+                global_transform="{color_camera_global_transform}"
+            />
+            <GetPointCloudData
+                topic="/philbart/lidar_points"
+                cloud="{point_cloud}"
+                local_transform="{point_cloud_local_transform}"
+                global_transform="{point_cloud_global_transform}"
+            />
+            <SemanticAnnotateImage
+                image="{color_image}"
+                mask="{mask_image}"
+            />
+            <PaintPointCloud
+                cloud="{point_cloud}"
+                cloud_transform="{point_cloud_local_transform}"
+                image_topic="/philbart/realsense_front/color/image_raw"
+                image="{color_image}"
+                camera_info="{camera_info}"
+                camera_transform="{color_camera_local_transform}"
+                mask_image="{mask_image}"
+                painted_full_cloud="{painted_cloud}"
+                painted_partial_cloud="{painted_partial_cloud}"
+            />
+            <IndexData 
+                point_cloud="{painted_cloud}" 
+                local_transform="{point_cloud_local_transform}"
+                global_transform="{point_cloud_global_transform}"
+            />
+        </Sequence>
+    </BehaviorTree>
+
+    <BehaviorTree ID="IterateSLAM">
+        <Sequence>
+            <Sequence>
+                <GetMappingDisplacement 
+                    linear_target="5.0" 
+                    angular_target="3.14"/>
+                <SubTree ID="GatherData"
+                    camera_info="{camera_info}"
+                />
+                <GetMap/>
+            </Sequence>
+        </Sequence>
+    </BehaviorTree>
+
+    <BehaviorTree ID="ShutdownSequence">
+        <Sequence>
+            <DisableLocalization/>
+            <UnloadData/>
+        </Sequence>
+    </BehaviorTree>
+
+    <BehaviorTree ID="PushMapData">
+        <Sequence>
+            <GetPose pose="{pose}"/>
+            <LookupHashes hashes="{local_disk_hashes}"/>
+            <ManageLocalStorage
+                pose="{pose}"
+                similarity_threshold="0.5"
+                radius="{radius}"
+                search_hashes="{local_disk_hashes}"
+                load_files="{load_files}"
+                unload_files="{unload_files}"
+            />
+            <SubTree ID="TransferMapData"
+                sender_hostname="{sender}"
+                sender_address="{sender_address}"
+                sender_base_path="/ws/data/dense_chunks/"
+                recipient_hostname="{recipient}"
+                recipient_address="{recipient_address}"
+                recipient_base_path="/ws/data/dense_chunks/"
+                file_paths="{unload_files}"
+            />
+        </Sequence>
+    </BehaviorTree>
+
+    <BehaviorTree ID="TransferMapData">
+        <Sequence>
+            <ZipFiles
+                hostname="{sender_hostname}"
+                base_path="{sender_base_path}"
+                file_paths="{file_paths}"
+                output_path="{path}"
+                delete="true"
+            />
+            <InterleavedSequence>
+                <ReceiveFiles 
+                    receiver_hostname="{recipient_hostname}" 
+                    address="{recipient_address}" 
+                    save_directory="{recipient_base_path}"
+                />
+                <SendFile 
+                    sender_hostname="{sender_hostname}" 
+                    address="{recipient_address}" 
+                    file_path="{path}" 
+                    delete="true"
+                />
+            </InterleavedSequence>
+            <UnzipFiles
+                hostname="{recipient_hostname}"
+                base_path="{recipient_base_path}"
+                file_path="{path}"
+                delete="true"
+            />
+        </Sequence>
+    </BehaviorTree>
+
+</root>

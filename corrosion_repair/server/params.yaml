@@ -1,0 +1,21 @@
+/**:
+  poirot:
+    ros__parameters:
+      plugin: /home/coral/poirot/poirot_plugin.py
+      service_types: 
+        - image_semantic_annotation
+      data_dir: /ws/data/
+      manual_calibrate: true
+
+  hyla_slam:
+    ros__parameters:
+      point_cloud_topic: /dummy
+      fixed_frame: map
+      robot_frame: map
+      localization_frame: map
+      best_effort_qos: false
+      mapping:
+        data_dir: /ws/data/map
+        half_side_length: 30.0
+        persist_recent_chunks: true
+        recent_scan_memory: 5

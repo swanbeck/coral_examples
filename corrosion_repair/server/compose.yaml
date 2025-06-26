@@ -1,0 +1,69 @@
+x-coral-config:
+  &coral-config
+  network_mode: host
+  ipc: host
+  tty: true
+  environment:
+    - ROS_DOMAIN_ID=65
+    - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+    - CYCLONEDDS_URI=/ws/lib/cyclonedds.xml
+    - AGENT=server
+    - PARAMS=/ws/params.yaml
+    - BT_FILE=/ws/bt.xml
+    - LOADING_LIBRARY_PATH=/ws/lib
+  volumes:
+    - .:/ws
+
+services:
+  robofleet_client:
+    image: coral-robofleet_client:humble-amd64
+    <<: *coral-config
+    environment:
+      - ROS_DOMAIN_ID=65
+      - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+      - CYCLONEDDS_URI=/ws/lib/cyclonedds.xml
+      - AGENT=server
+      - PARAMS=/ws/robofleet.yaml
+    profiles: [drivers]
+
+  ar_server:
+    image: coral-augre_server:humble-amd64
+    <<: *coral-config
+    profiles: [skillsets]
+
+  file_server:
+    image: coral-file_relay:humble-amd64
+    <<: *coral-config
+    profiles: [skillsets]
+
+  point_cloud_processing_server:
+    image: coral-point_cloud_processor:humble-amd64
+    <<: *coral-config
+    profiles: [skillsets]
+
+  slam_server:
+    image: coral-hyla_slam:humble-amd64
+    <<: *coral-config
+    profiles: [skillsets]
+
+  image_processing_server:
+    image: coral-supervised_labeler:humble-amd64
+    <<: *coral-config
+    environment:
+      - ROS_DOMAIN_ID=65
+      - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+      - CYCLONEDDS_URI=/ws/lib/cyclonedds.xml
+      - AGENT=server
+      - PARAMS=/ws/params.yaml
+      - DISPLAY=${DISPLAY}
+      - QT_X11_NO_MITSHM=1
+    volume:
+      - .:/ws
+      - /tmp/.X11-unix:/tmp/.X11-unix
+      - ${HOME}/.Xauthority:/home/coral/.Xauthority:rw
+    profiles: [skillsets]
+
+  primary_executor:
+    image: coral-dynamic_runner:humble-amd64
+    <<: *coral-config
+    profiles: [executors]

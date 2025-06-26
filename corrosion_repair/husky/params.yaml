@@ -1,0 +1,38 @@
+/**:
+  watertender:
+    ros__parameters:
+      fixed_frame: map
+      robot_frame: base_link
+      raw_data_topics:
+        PointCloud2:
+          - /philbart/lidar_points
+        Image:
+          - /philbart/realsense_front/color/image_raw
+        CameraInfo:
+          - /philbart/realsense_front/color/camera_info
+
+  hyla_slam:
+    ros__parameters:
+      point_cloud_topic: /philbart/lidar_points
+      fixed_frame: map
+      robot_frame: base_link
+      localization_frame: philbart/ouster_link
+      best_effort_qos: false
+      mapping:
+        data_dir: /ws/data/map/
+        half_side_length: 3.0
+        persist_recent_chunks: true
+        recent_scan_memory: 5
+
+  poirot:
+    ros__parameters:
+      plugin: /home/coral/poirot/poirot_plugin.py
+      service_types: 
+        - image_semantic_annotation
+      data_dir: /ws/data
+      weights_path: /home/coral/poirot/weights/47.pt
+
+  phidias_painter:
+    ros__parameters:
+      painter:
+        extrinsic_calibration_dir: /ws/data/

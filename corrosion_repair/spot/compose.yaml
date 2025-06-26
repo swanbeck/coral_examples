@@ -1,0 +1,93 @@
+x-coral-config:
+  &coral-config
+  network_mode: host
+  ipc: host
+  tty: true
+  environment:
+    - ROS_DOMAIN_ID=65
+    - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+    - CYCLONEDDS_URI=/ws/cyclonedds.xml
+    - AGENT=spot
+    - PARAMS=/ws/params.yaml
+    - BT_FILE=/ws/bt.xml
+    - LOADING_LIBRARY_PATH=/ws/lib
+  volumes:
+    - .:/ws
+
+services:
+  spot_drivers:
+    image: spot_ros:humble
+    <<: *coral-config
+    devices:
+      - /dev/input/js0
+    profiles: [drivers]
+
+  lidar_drivers:
+    image: coral-velodyne_drivers:humble-arm64
+    <<: *coral-config
+    profiles: [drivers]
+
+  camera_drivers:
+    image: coral-realsense_drivers:humble-arm64
+    <<: *coral-config
+    volumes:
+      - .:/ws
+      - /dev/bus/usb:/dev/bus/usb
+    devices:
+      - /dev/video0:/dev/video0
+      - /dev/video1:/dev/video1
+      - /dev/video2:/dev/video2
+      - /dev/video3:/dev/video3
+      - /dev/video4:/dev/video4
+      - /dev/video5:/dev/video5
+    profiles: [drivers]
+
+  micro_ros:
+    image: coral-micro_ros_agent:humble-arm64
+    <<: *coral-config
+    profiles: [drivers]
+
+  raw_data_server:
+    image: coral-watertender:humble-arm64
+    <<: *coral-config
+    profiles: [skillsets]
+
+  slam_server:
+    image: coral-hyla_slam:humble-arm64
+    <<: *coral-config
+    profiles: [skillsets]
+
+  image_processing_server:
+    image: coral-corrosion_detector:humble-jetson
+    <<: *coral-config
+    profiles: [skillsets]
+
+  data_fusion_server:
+    image: coral-phidias:humble-arm64
+    <<: *coral-config
+    profiles: [skillsets]
+
+  file_server:
+    image: coral-file_relay:humble-arm64
+    <<: *coral-config
+    profiles: [skillsets]
+  
+  point_cloud_processing_server:
+    image: coral-point_cloud_processor:humble-arm64
+    <<: *coral-config
+    profiles: [skillsets]
+  
+  coverage_plan_server:
+    image: coral-magellan:humble-arm64
+    <<: *coral-config
+    profiles: [skillsets]
+
+  nbv_server:
+    image: coral-next_best_view:humble-jetson
+    <<: *coral-config
+    profiles: [skillsets]
+
+  primary_executor:
+    image: coral-dynamic_runner:humble-arm64
+    <<: *coral-config
+    profiles: [executors]

@@ -1,0 +1,311 @@
+<root main_tree_to_execute="Main" BTCPP_format="4">
+
+    <BehaviorTree ID="Main">
+        <Sequence>
+            <WaitForRemoteTrigger process_identifier="authorize_repair"/>
+
+            <SubTree ID="StartupSequence"/>
+
+            <SubTree ID="PullMapData"
+                radius="50.0"
+                sender="server"
+                sender_address="10.10.10.8"
+                recipient="spot"
+                recipient_address="10.10.0.4"
+            />
+
+            <ConstructPose
+                frame_id="base_link"
+                x="1.2"
+                y="0.0"
+                z="0.0"
+                pose="{roi_center}"
+            />
+            <SimulatePreprocessing
+                x_length="0.5"
+                y_length="0.5"
+                z_length="0.5"
+                roi_extents="{roi_extents}" 
+            />
+
+            <SubTree ID="PerformNBVWithDataCollection"
+                roi_center="{roi_center}"
+                roi_extents="{roi_extents}"
+                scene_cloud="{scene_cloud}"
+                roi_cloud="{roi_cloud}"
+                local_map_cloud="{local_map_cloud}"
+                extracted_points="{extracted_points}"
+                clusters="{clusters}"
+            />
+
+            <VoxelizeCloud
+                cloud="{extracted_points}"
+                leaf_size="0.05"
+                voxelized_cloud="{extracted_points}"
+            />
+
+            <SubTree ID="PerformSurfaceCoverage"
+                current_element="{extracted_points}"
+            /> 
+
+            <SubTree ID="ShutdownSequence"/>
+        </Sequence>
+    </BehaviorTree>
+
+    <BehaviorTree ID="PerformSurfaceCoverage">
+        <Sequence>
+            <GenerateTVFGraph cluster="{current_element}" tvf_graph_nodes="{tvf_graph_nodes}" tvf_graph_edges="{tvf_graph_edges}" />
+            <PrunePoses poses="{tvf_graph_nodes}" pruned_poses="{pruned_poses}" />
+            <GeneratePoseTrajectory tvf_graph_nodes="{pruned_poses}" tvf_poses="{tvf_poses}" />
+
+            <IteratePoses queue="{tvf_poses}" value="{current_pose}">
+                <Sequence>
+                    <ForceSuccess>
+                        <Sequence>
+                            <MoveHandToPose 
+                                target_pose="{current_pose}"
+                                target_link="arm0_laser_beam"
+                                planning_group="arm"
+                            />
+                            <SubTree ID="ToggleSpray"/>
+                        </Sequence>
+                    </ForceSuccess>
+                </Sequence>
+            </IteratePoses>
+
+        </Sequence>
+    </BehaviorTree>
+
+    <BehaviorTree ID="ToggleSpray">
+        <Sequence>
+            <Repeat num_cycles="3">
+                <Delay delay_msec="10">
+                    <SendServoAngle angle="90"/>
+                </Delay>
+            </Repeat>
+            <Sleep msec="3000"/>
+            <Repeat num_cycles="3">
+                <Delay delay_msec="10">
+                    <SendServoAngle angle="130"/>
+                </Delay>
+            </Repeat>
+        </Sequence>
+    </BehaviorTree>
+
+    <BehaviorTree ID="PerformNBVWithDataCollection">
+        <Sequence>
+            <RetryUntilSuccessful num_attempts="3">
+                <GetCameraInfoData
+                    topic="/camera/camera/depth/camera_info"
+                    camera_info="{depth_camera_info}"
+                    timeout="3"
+                />
+            </RetryUntilSuccessful>
+            <RetryUntilSuccessful num_attempts="3">
+                <GetCameraInfoData
+                    topic="/camera/camera/color/camera_info"
+                    camera_info="{color_camera_info}"
+                    timeout="3"
+                />
+            </RetryUntilSuccessful>
+
+            <ActivatePolicy 
+                roi_center="{roi_center}"
+                roi_extents="{roi_extents}"
+            />
+
+            <SampleFacePoses
+                center_pose="{roi_center}"
+                side_lengths="{roi_extents}"
+                sampling_scheme="1"
+                sample_poses="{poses}"
+            />
+
+            <Repeat num_cycles="5">
+                <Sequence>
+                    <SetViews 
+                        view_poses="{poses}"
+                        fractional_scores="{scores}"
+                    />
+
+                    <GetBestView 
+                        view_poses="{poses}"
+                        fractional_scores="{scores}"
+                        best_view_pose="{best_pose}"
+                        new_poses="{poses}"
+                        new_scores="{scores}"
+                    />
+
+                    <CalculatePlanningPose
+                        view_pose="{best_pose}"
+                        view_frame="camera_depth_optical_frame"
+                        planning_frame="arm0_laser_beam"
+                        planning_pose="{best_pose}"
+                    />
+
+                    <ForceSuccess>
+                        <Sequence>
+                            <MoveHandToPose 
+                                target_pose="{best_pose}"
+                                target_link="arm0_laser_beam"
+                                planning_group="arm"
+                            />
+                            <SubTree ID="GatherData"
+                                depth_camera_info="{depth_camera_info}"
+                                color_camera_info="{color_camera_info}"
+                            />
+                        </Sequence>
+                    </ForceSuccess>
+
+                </Sequence>
+            </Repeat>
+
+            <ConcludePolicy
+                return_pointcloud="true"
+                scene_cloud="{scene_cloud}"
+                roi_cloud="{roi_cloud}"
+            />
+
+            <SubTree ID="ExtractClusters"
+                local_map_cloud="{local_map_cloud}"
+                extracted_points="{extracted_points}"
+                clusters="{clusters}"
+            />
+        </Sequence>
+    </BehaviorTree>
+
+    <BehaviorTree ID="GatherData">
+        <Sequence>
+            <RetryUntilSuccessful num_attempts="3">
+                <GetImageData
+                    topic="/camera/camera/depth/image_rect_raw"
+                    image="{depth_image}"
+                    local_transform="{depth_camera_local_transform}"
+                    global_transform="{depth_camera_global_transform}"
+                    timeout="3"
+                />
+            </RetryUntilSuccessful>
+            <RetryUntilSuccessful num_attempts="3">
+                <GetImageData
+                    topic="/camera/camera/color/image_raw"
+                    image="{color_image}"
+                    local_transform="{color_camera_local_transform}"
+                    global_transform="{color_camera_global_transform}"
+                    timeout="3"
+                />
+            </RetryUntilSuccessful>
+            
+            <SemanticAnnotateImage
+                image="{color_image}"
+                mask="{mask_image}"
+            />
+            
+            <PaintDepthImage
+                depth_image="{depth_image}"
+                depth_camera_info="{depth_camera_info}"
+                depth_camera_transform="{depth_camera_local_transform}"
+                color_image="{color_image}"
+                color_camera_info="{color_camera_info}"
+                color_camera_transform="{color_camera_local_transform}"
+                mask_image="{mask_image}"
+                max_range="1.0"
+                painted_cloud="{painted_cloud}"
+            />
+
+            <IndexData 
+                point_cloud="{painted_cloud}" 
+                local_transform="{depth_camera_local_transform}"
+                global_transform="{depth_camera_global_transform}"
+            />
+        </Sequence>
+    </BehaviorTree>
+
+    <BehaviorTree ID="ExtractClusters">
+        <Sequence>
+            <GetMap map="{local_map_cloud}"/>
+            <ExtractPoints
+                cloud="{local_map_cloud}"
+                field="semantic_label"
+                lower_bound="0.1"
+                upper_bound="255.1"
+                points="{extracted_points}"
+            />
+            <ClusterCloud
+                cloud="{extracted_points}"
+                visualization_cloud="{visualization_cloud}"
+                clusters="{clusters}"
+            />
+        </Sequence>
+    </BehaviorTree>
+
+    <BehaviorTree ID="StartupSequence">
+        <Sequence>
+            <SetLocalizationEstimate/>
+            <UpdateLocalizationMap/>
+            <EnableLocalization/>
+            <GetMap/>
+            <TriggerService service_name="/spot_manipulation_driver/stow_arm"/>
+        </Sequence>
+    </BehaviorTree>
+
+    <BehaviorTree ID="ShutdownSequence">
+        <Sequence>
+            <DisableLocalization/>
+            <UnloadData/>
+            <TriggerService service_name="/spot_manipulation_driver/stow_arm"/>
+        </Sequence>
+    </BehaviorTree>
+
+    <BehaviorTree ID="PullMapData">
+        <Sequence>
+            <GetPose pose="{pose}"/>
+            <LookupHashes hashes="{local_disk_hashes}"/>
+            <ManageLocalStorage
+                pose="{pose}"
+                similarity_threshold="0.5"
+                radius="{radius}"
+                search_hashes="{local_disk_hashes}"
+                load_files="{load_files}"
+                unload_files="{unload_files}"
+            />
+            <SubTree ID="TransferMapData"
+                sender_hostname="{sender}"
+                sender_address="{sender_address}"
+                sender_base_path="/ws/data/dense_chunks/"
+                recipient_hostname="{recipient}"
+                recipient_address="{recipient_address}"
+                recipient_base_path="/ws/data/dense_chunks/"
+                file_paths="{load_files}"
+            />
+        </Sequence>
+    </BehaviorTree>
+
+    <BehaviorTree ID="TransferMapData">
+        <Sequence>
+            <ZipFiles
+                hostname="{sender_hostname}"
+                base_path="{sender_base_path}"
+                file_paths="{file_paths}"
+                output_path="{path}"
+            />
+            <InterleavedSequence>
+                <ReceiveFiles 
+                    receiver_hostname="{recipient_hostname}" 
+                    address="{recipient_address}" 
+                    save_directory="{recipient_base_path}"
+                />
+                <SendFile 
+                    sender_hostname="{sender_hostname}" 
+                    address="{recipient_address}" 
+                    file_path="{path}"
+                />
+            </InterleavedSequence>
+            <UnzipFiles
+                hostname="{recipient_hostname}"
+                base_path="{recipient_base_path}"
+                file_path="{path}"
+            />
+        </Sequence>
+    </BehaviorTree>
+
+</root>

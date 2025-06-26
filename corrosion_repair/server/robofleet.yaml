@@ -1,0 +1,96 @@
+# Requires these plugin packages at runtime:
+#   std_msgs_robofleet
+#   geometry_msgs_robofleet
+#   std_srvs_robofleet
+
+params:
+  host_url: "ws://192.168.11.11:8080"
+  wait_for_pongs: true
+  max_queue_before_waiting: 5
+  verbosity: 2
+  spin_threads: 1
+
+# publishers establish topic streams for messages going out from the client to the robofleet server
+publishers: [
+  {
+    client_topic: "/doosan/spawn_robot",
+    rbf_topic: "/doosan/spawn_robot",
+    type: "geometry_msgs/PoseStamped",
+    rate_limit: 1.0,
+    priority: 1.0,
+    no_drop: false,
+    queue_size: 10
+  },
+  {
+    client_topic: "/marker/spawn_robot",
+    rbf_topic: "/marker/spawn_robot",
+    type: "geometry_msgs/PoseStamped",
+    rate_limit: 1.0,
+    priority: 1.0,
+    no_drop: false,
+    queue_size: 10
+  },
+  {
+    client_topic: "/spot/spawn_robot",
+    rbf_topic: "/spot/spawn_robot",
+    type: "geometry_msgs/PoseStamped",
+    rate_limit: 1.0,
+    priority: 1.0,
+    no_drop: false,
+    queue_size: 10
+  },
+  {
+    client_topic: "/augre/points",
+    rbf_topic: "/augre/points",
+    type: "sensor_msgs/PointCloud2",
+    rate_limit: 1.0,
+    priority: 1.0,
+    no_drop: false,
+    queue_size: 10
+  },
+  {
+    client_topic: "/blue/points",
+    rbf_topic: "/blue/points",
+    type: "sensor_msgs/PointCloud2",
+    rate_limit: 1.0,
+    priority: 1.0,
+    no_drop: false,
+    queue_size: 10
+  },
+  {
+    client_topic: "/red/points",
+    rbf_topic: "/red/points",
+    type: "sensor_msgs/PointCloud2",
+    rate_limit: 1.0,
+    priority: 1.0,
+    no_drop: false,
+    queue_size: 10
+  },
+  {
+    client_topic: "/spot/twist_path",
+    rbf_topic: "/spot/twist_path",
+    type: "nav_msgs/Path",
+    rate_limit: 1.0,
+    priority: 1.0,
+    no_drop: false,
+    queue_size: 10
+  },
+]
+
+# subscribers establish topic streams for messages coming in from the robofleet server to the client
+subscribers: [
+  {
+    client_topic: "/hololens/bounding_object",
+    rbf_topic: "/hololens/bounding_object",
+    type: "augre_msgs/BoundingObject3D",
+    latched: false
+  },
+]
+
+incoming_services: []
+
+outgoing_services: []
+
+incoming_actions: []
+
+outgoing_actions: []
