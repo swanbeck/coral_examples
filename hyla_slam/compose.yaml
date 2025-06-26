@@ -8,7 +8,7 @@ x-coral-config:
     - ROS_LOCALHOST_ONLY=1
     - PARAMS=/ws/params.yaml
     - BT_FILE=/ws/bt.xml
-    - LOADING_LIBRARY_PATH=${INTERNAL_CORAL_LIB}
+    - LOADING_LIBRARY_PATH=/ws/lib
     - BAG_DIR=/ws/bags
     - BAG=colosseo_test0_00
   volumes:
@@ -16,21 +16,21 @@ x-coral-config:
 
 services:
   bag_player:
-    image: stevenswanbeck/coral-bag_player:humble-amd64
+    image: swanbeck/coral-bag_player:humble-amd64
     <<: *coral-config
     profiles: [drivers]
 
   hyla_slam:
-    image: stevenswanbeck/coral-hyla_slam:humble-amd64
+    image: swanbeck/coral-hyla_slam:humble-amd64
     <<: *coral-config
     profiles: [skillsets]
 
   watertender:
-    image: stevenswanbeck/coral-watertender:humble-amd64
+    image: swanbeck/coral-watertender:humble-amd64
     <<: *coral-config
     profiles: [skillsets]
 
   runner:
-    image: stevenswanbeck/coral-dynamic_runner:humble-amd64
+    image: swanbeck/coral-dynamic_runner:humble-amd64
     <<: *coral-config
     profiles: [executors]
