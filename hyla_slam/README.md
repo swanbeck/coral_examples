@@ -6,8 +6,7 @@ To run the example, use the included [run.sh](./run.sh) script:
 bash run.sh
 ```
 which will automatically download the bag, convert it to ROS2 (using the Python [rosbags](https://pypi.org/project/rosbags/) library), and start the Coral instance. All Coral images for this example are available on Dockerhub and will be automatically pulled by Coral if not found locally. 
-
-```bash
+```
 📦 Extracting dependencies from image swanbeck/coral-bag_player:humble-amd64 for service bag_player
 📦 Extracting dependencies from image swanbeck/coral-hyla_slam:humble-amd64 for service hyla_slam
 📦 Extracting dependencies from image swanbeck/coral-watertender:humble-amd64 for service watertender
@@ -27,10 +26,8 @@ Delaying 1s before starting executors...
  ✔ Container coral-1750974833831974735-runner-1  Started
 ```
 
-
 Once the runner process exits, the running skillsets can be killed with `Ctrl + C`:
-
-```bash
+```
 runner               | [runner-1] [INFO] [1750974917.912054850] [runner]: SUCCESS!
 runner               | [INFO] [runner-1]: process has finished cleanly [pid 51]
 ^C

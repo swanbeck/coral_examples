@@ -21,7 +21,7 @@ if [ ! -d "$ROS2_BAG" ]; then
     fi
     # === Convert ROS1 bag to ROS2 ===
     if ! command -v rosbags-convert &> /dev/null; then
-        echo "rosbags-convert command not found. Please install it with 'pip install rosbags' then run this script again."
+        echo "rosbags-convert command not found. Please install it (pip install rosbags) then run this script again."
         exit 1
     fi
     echo "Converting ROS1 bag to ROS2..."
@@ -32,5 +32,8 @@ if [ ! -d "$ROS2_BAG" ]; then
     fi
 fi
 
+# === Set Coral library ===
+export CORAL_LIB="$(pwd)/lib"
+
 # === Run Coral ===
-export CORAL_LIB="$(pwd)/lib" && coral launch
+coral launch
