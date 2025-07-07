@@ -6,11 +6,7 @@ This example is based on ongoing efforts to detect and repair corrosion in indus
 4. A static, high-reach manipulator system also tasked with performing surface coverage but capable of reaching much higher surfaces than the quadruped.
 
 Once each set of configuration files is copied to the corresponding system, the whole system can be started by running
-```bash
-export CORAL_LIB="$(pwd)/lib"
 ```
-followed by
-```bash
 coral launch
 ```
 on each robot.

@@ -2,7 +2,7 @@
 This example uses [Hyla-SLAM](https://github.com/swanbeck/hyla_slam.git) to generate a point cloud map using a ROS2 bag file. It uses the [colosseo_test0_00](http://srrg.diag.uniroma1.it/vbr_slam/colosseo/colosseo_test0/colosseo_test0_00.bag) bag from the [VBR dataset](https://rvp-group.net/slam-dataset.html). 
 
 To run the example, use the included [run.sh](./run.sh) script:
-```bash
+```
 bash run.sh
 ```
 which will automatically download the bag, convert it to ROS2 (using the Python [rosbags](https://pypi.org/project/rosbags/) library), and start the Coral instance. All Coral images for this example are available on Dockerhub and will be automatically pulled by Coral if not found locally. 

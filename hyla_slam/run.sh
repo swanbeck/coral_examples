@@ -32,8 +32,5 @@ if [ ! -d "$ROS2_BAG" ]; then
     fi
 fi
 
-# === Set Coral library ===
-export CORAL_LIB="$(pwd)/lib"
-
 # === Run Coral ===
 coral launch
