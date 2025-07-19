@@ -1,9 +1,9 @@
 <div align="center">
-  <img src="./.asset/coral.svg" width="30%">
+    <img src="./.asset/coral.svg" width="20%">
 </div>
 
 # Coral Examples
-This repo contains examples of practical applications that have been enabled by Coral. It is meant to show the general structure of Coral composed systems and illustrate how even extremely complex multi-robot applications can be synthesized using just a few high-level configuration files.
+This repo contains examples of practical applications that have been enabled by Coral. It is meant to show the general structure of Coral-composed systems and illustrate how even extremely complex multi-robot applications can be synthesized using just a few high-level configuration files.
 
 Before getting started, please build the [Coral CLI](https://github.com/swanbeck/coral_cli.git).
 
