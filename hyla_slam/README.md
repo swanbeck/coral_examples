@@ -1,7 +1,7 @@
 # Hyla-SLAM
 This example uses [Hyla-SLAM](https://github.com/swanbeck/hyla_slam.git) to generate a point cloud map using a ROS2 bag file. It uses the [colosseo_test0_00](http://srrg.diag.uniroma1.it/vbr_slam/colosseo/colosseo_test0/colosseo_test0_00.bag) bag from the [VBR dataset](https://rvp-group.net/slam-dataset.html). 
 
-To run the example, use the included [run.sh](./run.sh) script:
+Before running, check the [.env](./.env) file and change the `ARCH` environment variable to match your system (either `amd64` or `arm64` at the time of writing). Then, to run the example, use the included [run.sh](./run.sh) script:
 ```
 bash run.sh
 ```
@@ -46,7 +46,7 @@ Cleaning up instance coral-1750974833831974735
 
 Point cloud map data will be saved in the [data/](./data) directory and will resemble below.
 <div align="center">
-  <img src="./.asset/output.png" width="80%">
+  <img src="./.asset/colosseo.svg" width="100%">
 </div>
 
 Users are referred to [Hyla-SLAM](https://github.com/swanbeck/hyla_slam.git) for interpreting this output.
