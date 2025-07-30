@@ -16,21 +16,21 @@ x-coral-config:
 
 services:
   bag_player:
-    image: swanbeck/coral-bag_player:humble-amd64
+    image: swanbeck/coral-bag_player:${ROS2_DISTRO}-${ARCH}
     <<: *coral-config
     profiles: [drivers]
 
   hyla_slam:
-    image: swanbeck/coral-hyla_slam:humble-amd64
+    image: swanbeck/coral-hyla_slam:${ROS2_DISTRO}-${ARCH}
     <<: *coral-config
     profiles: [skillsets]
 
   watertender:
-    image: swanbeck/coral-watertender:humble-amd64
+    image: swanbeck/coral-watertender:${ROS2_DISTRO}-${ARCH}
     <<: *coral-config
     profiles: [skillsets]
 
   runner:
-    image: swanbeck/coral-dynamic_runner:humble-amd64
+    image: swanbeck/coral-dynamic_runner:${ROS2_DISTRO}-${ARCH}
     <<: *coral-config
     profiles: [executors]
